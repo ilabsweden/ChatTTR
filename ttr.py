@@ -9,7 +9,7 @@
 # License: MIT
 ###########################################################
 
-import re, argparse
+import re, argparse, os
 import nltk
 import logreader
 import pandas as pd
@@ -42,14 +42,22 @@ def tokenise(s):
     s = s.lower()
     return nltk.word_tokenize(s)
     
-def printTTR(sourcefile):
-    for a,v,s in ttri(logreader.readPepperChat(sourcefile)):
+def printTTR(sourcefile,skipFirstN=1):
+    for a,v,s in ttri(logreader.readPepperChat(sourcefile,skipFirstN)):
         print('%s: (ttr=%.2f) %s'%(('R' if a=='robot' else 'H'),v,s.replace('\n',' ')))
 
-def ttrToDf(sourcefile,destfile):
-    df = pd.DataFrame(list(ttri(logreader.readPepperChat(sourcefile))),columns=('Agent','TTR','Phrase'))
+def ttrToDf(sourcefile,destfile,skipFirstN=1):
+    df = pd.DataFrame(list(ttri(logreader.readPepperChat(sourcefile,skipFirstN))),columns=('Agent','TTR','Phrase'))
     df.to_excel(destfile)
     print('Analysis saved as',destfile)
+
+def ttrDir(src,target=None,skipFirstN=1):
+    srcFiles = [os.path.splitext(f) for f in os.listdir(src) if f.endswith('.log')]
+
+    for f,ext in srcFiles:
+        print('Analysing TTR for',f+ext)
+        if target:
+            ttrToDf(os.path.join(src,f+ext),os.path.join(target,f+'.xlsx'),skipFirstN)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -57,12 +65,14 @@ def main():
         description='Type/Token Ration (TTR) analysis of dialogues.',
         epilog='By Erik Billing, University of Skövde')
     
-    parser.add_argument('sourcefile',help='The logfile containing the dialogue to be analsed.')
-    parser.add_argument('-s','--save', help='Save analysis to spreadsheet file, e.g., analysis.xlsx.')
+    parser.add_argument('source',help='The log file or folder containing the dialogue or dialogues to be analsed.')
+    parser.add_argument('save',help='Target directory for output files.')
 
     args = parser.parse_args()
 
-    if args.save:
+    if os.path.isdir(args.source):
+        ttrDir(args.source,args.save)
+    elif args.save:
         ttrToDf(args.sourcefile,args.save)
     else:
         printTTR(args.sourcefile)

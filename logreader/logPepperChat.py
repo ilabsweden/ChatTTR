@@ -13,7 +13,7 @@ import json
 import sys
 from datetime import datetime
 
-def readLog(path):
+def readLog(path,skipFirstN=0):
     with open(path) as f:
         s = f.read()
         if not s.startswith('['):
@@ -31,11 +31,16 @@ def readLog(path):
             #     pass
             # lastt = t
 
-
             if 'receiving' in i and 'choices' in i['receiving']:
-                yield 'robot',i['receiving']['choices'][0]['message']['content'].strip()
+                if skipFirstN>0:
+                    skipFirstN-=1
+                else:
+                    yield 'robot',i['receiving']['choices'][0]['message']['content'].strip()
             if 'sending' in i and 'input' in i['sending']:
-                yield 'human',i['sending']['input'].strip()
+                if skipFirstN>0:
+                    skipFirstN-=1
+                else:
+                    yield 'human',i['sending']['input'].strip()
 
 def printLog(path):
     for agent,uterance in readLog(path):
