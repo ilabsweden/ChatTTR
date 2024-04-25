@@ -12,12 +12,11 @@ ChatTTR runns under Python 3.3+. Install dependencies by running the following c
 
 ChatTTR currently reads dialogue log files from [PepperChat](https://github.com/ilabsweden/pepperchat). A log file may be analysed as follows: 
 
-    python ttr.py <path to log file>
+    python ttr.py <path to log file or folder>
 
 Optionally, the analsis can be saved to an excel file:
 
-    python ttr.py <path to log file> --save ttr-analysis.xlsx
-
+    python ttr.py <path to log file or folder> <path to target folder>
 
 ## License
 
